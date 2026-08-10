@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+app.use(express.json());
 const PORT = 3000;
 
 //stage2
@@ -14,7 +15,7 @@ let database = [
 //let's create middleware here
 
 //first middleware for JSON request body
-app.use(express.json());
+
 
 //create middleware to catch some request received
 app.use(
@@ -28,7 +29,7 @@ app.use(
 app.use(
   (err,req,res,next) => {
     console.error(err.stack);
-    res.status(500).json({succes : false , message : "Something went wrong."});
+    return res.status(500).json({succes : false , message : "Something went wrong."});
   }
 );
 //stage3
@@ -36,13 +37,13 @@ app.use(
 //stage 1
 app.get(
   '/',(req,res) => {
-    res.json({ "name": "Task API", "version": "1.0", "endpoints": ["/tasks"] });
+    return res.json({ "name": "Task API", "version": "1.0", "endpoints": ["/tasks"] });
   }
 );
 
 app.get(
   '/health' ,(req,res) => {
-    res.json({ "status": "ok" });
+    return res.json({ "status": "ok" });
   }
 );
 //stage 1
@@ -50,7 +51,7 @@ app.get(
 //stage2
 app.get(
   '/tasks',(req,res) => {
-    res.status(200).json(database);
+    return res.status(200).json(database);
   }
 );
 app.get(
@@ -59,10 +60,10 @@ app.get(
     const item = database.find(i => i.id === id);
 
     if(!database.includes(item)) {
-      res.status(404).json({ "error": "Task 99 not found" });
+      return res.status(404).json({ "error": "Task 99 not found" });
     };
 
-    res.json(item);
+    return res.json(item);
   }
 );
 //stage2
@@ -88,7 +89,7 @@ app.post(
 
     database.push(newTask);
     
-    res.status(201).json(newTask);
+    return res.status(201).json(newTask); //201 == created
   }
 );
 //stage3
@@ -99,6 +100,56 @@ app.post(
 //irm -Uri http://localhost:3000/tasks -Method Post -ContentType "application/json" -Body '{"title":"Buy milk"}'
 //use this for testing post new task for powershell
 
+
+//stage4
+app.put(
+  '/tasks/:id' ,(req,res) => {
+    const id = parseInt(req.params.id);
+    const item = database.find(i => i.id === id);
+    if(!(item)) {
+      return res.status(404).json({ "error": "Task not found" });
+    };
+
+
+    if (req.body.title === undefined && req.body.done === undefined) {
+      return res.status(400).json({ error: "Bad Request: Body cannot be empty." });
+    }
+    //check if the response body have tittle (so we can input if this have body)
+    if(req.body.title !== undefined && (typeof req.body.title !== 'string' || req.body.title.trim() === '')){
+      return res.status(400).json({ error: "Bad Request: Title cannot be empty." });
+    };
+
+    //well if we wanna change the done boolean , we must create the validation statement first for the input
+    if(req.body.done !== undefined && (typeof req.body.done !== 'boolean')){
+      return res.status(400).json({ error: "Bad Request: Done must be a boolean." })
+    };
+
+    if (req.body.title !== undefined) item.title = req.body.title.trim();
+    if (req.body.done !== undefined) item.done = req.body.done;
+
+
+    return res.status(200).json(item); //200 is ok
+  }
+);
+//stage4
+
+//stage4
+app.delete(
+  '/tasks/:id' , (req,res) => {
+    const id = parseInt(req.params.id);
+    const index = database.findIndex(i => i.id === id); //instead of we validate the item with the whole object context
+    //in here we just use the index , because we do deleting in here not input
+
+    if (index === -1) {
+    return res.status(404).json({ error: "Task not found" });
+  }
+    //delete task from database
+    database.splice(index , 1);
+
+    return res.status(204).send(); //204 mean no context which mean that we succesfully delete it
+  }
+);
+//stage4
 
 //we must listen our port
 app.listen(
