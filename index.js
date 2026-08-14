@@ -2,6 +2,36 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 const PORT = 3000;
+
+//Stage0Assignment2
+//In here we will replace array with Sql Lite to store our data
+
+const Database = require('better-sqlite3');
+
+const database = new Database('tasks.db');
+
+database.exec(`
+  CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    done BOOLEAN NOT NULL DEFAULT 0
+  )
+`);
+
+//then , we will cek the number of the row first and then check if 0 we will create new tasks
+const rowCount = database.prepare('SELECT COUNT(*) as count FROM tasks').get().count;
+
+//here we will create new tasks
+
+if (rowCount === 0) {
+  const insertTask = database.prepare('INSERT INTO tasks (title, done) VALUES (?, ?)');
+  insertTask.run('task1', 0);
+  insertTask.run('task2', 0);
+  insertTask.run('task3', 1);
+  console.log('Done for load the initial seed.');
+}
+//Stage0Assignment2
+
 //stage5
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./openapi.json');
@@ -10,11 +40,12 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
 //stage2
-let database = [
+/*let database = [
   { id : 1, title: "task1" , done: true},
   { id : 2, title: "task2" , done: false},
   { id : 3, title: "task3" , done: true}
 ];
+*/
 //stage2
 
 //stage3 
