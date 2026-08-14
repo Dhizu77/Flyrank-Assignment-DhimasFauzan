@@ -85,6 +85,9 @@ app.get(
 );
 //stage 1
 
+
+
+/*
 //stage2
 app.get(
   '/tasks',(req,res) => {
@@ -104,13 +107,73 @@ app.get(
   }
 );
 //stage2
+*/
 
+//stage1Assignment2
+app.get(
+  '/tasks' , (req,res) => {
+    //first we must create the statement in sql syntax first
+    const statement = database.prepare('SELECT * from tasks');
+
+    //then we will store the execute result of the statemen
+    //but because in SQLite , the boolean is store in number 
+    //we should change it first with map ()
+    //so map() takes an existing array, applies a transformation callback 
+    // to each element, and returns a new array with the modified elements
+    //but before we use map , we need to get all of tasks into array of rows
+    //we need all() to use it , so
+
+    const allTasks = statement.all().map(task => ({
+      ...task , //... is Spread operator , it keeps all original keys ,
+      //because in here we just need to change the 'done' value not the keys
+      done : Boolean(task.done)
+    }));
+    const id = database.prepare(req.params.id);
+    return res.status(200).json(allTasks)
+  }
+);
+
+app.get(
+  '/tasks/:id',(req,res) => {
+
+    //okay first we need extract the id in the req body first to 
+    //pass it leter into the statement
+    const id = parseInt(req.params.id ,10);
+
+    
+    //then we create statement to load the syntax first to execute later for 
+    //get the item by id
+    const statement = database.prepare('SELECT * FROM tasks WHERE id = ?')
+    const item = statement.get(id);
+    
+
+     // statement.get(id) returns the matching task object, 
+     // or 'undefined' if no row matches
+    // In JavaScript, 'undefined' is falsy
+    // By using the logical NOT operator (!item):
+    // - If item is undefined (falsy)
+    // -> !undefined becomes true  -> triggers the 404 block
+    // - If item exists (truthy object) ->
+    //  !{...}     becomes false -> skips to the 200 response
+    if(!item) {
+      return res.status(404).json({ "error": `Task ${id} not found` });
+    };
+
+
+    //in the end , we retur the code and body response that already
+    //edit the value of done keys (number to boolean)
+    return res.status(200).json({
+    ...item,
+    done: Boolean(item.done)
+  });
+  }
+);
+//stage1Assignment2
 
 //stage3
 app.post(
   '/tasks' ,(req,res) => {
 
-    
     //filter before create newTask , check whether the body is null or the type is not string or the lenght of the title is equal to 0
     //if true return errro and json error message
     if(!req.body?.title || typeof req.body.title !== 'string' || req.body.title.length === 0){
