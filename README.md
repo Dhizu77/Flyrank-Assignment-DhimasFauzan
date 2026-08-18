@@ -71,6 +71,7 @@ SELECT COUNT(*) FROM tasks;
 UPDATE tasks SET done = 1;
 ```
 Output example :
+
 ![Database Viewer Screenshot](./Database-after-updpate-all-tasks-to-done.png)
 
 
@@ -79,10 +80,14 @@ Output example :
 DELETE FROM tasks WHERE done = 1;
 ```
 Output Example :
+
 ![Database Viewer Screenshot](./Database-after-delete-all-done-tasks.png)
 
 Example all outputs below:
+
 ![Database Viewer Screenshot](./Apply-all-SQL-syntax.png)
+
+
 
 ## API Endpoints
 
