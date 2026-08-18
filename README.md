@@ -1,14 +1,37 @@
 # Flyrank-Assignment-DhimasFauzan
 
-# Task Management API
+# Task Management API (SQLite Persistent Backend)
 
-A RESTful CRUD API built with Node.js and Express to manage tasks in memory, fully documented with Swagger UI.
+A RESTful CRUD API built with Node.js, Express, and persistent SQLite storage (`better-sqlite3`), fully documented with Swagger UI.
+
+---
 
 ## Features
 
-- Complete CRUD operations (`GET`, `POST`, `PUT`, `DELETE`)
-- Strict input validation and RESTful HTTP status codes (`200`, `201`, `204`, `400`, `404`, `500`)
-- Interactive API documentation served via Swagger UI at `/docs`
+- **Full CRUD Support**: Complete implementation of `GET`, `POST`, `PUT`, and `DELETE` endpoints.
+- **Persistent Storage**: Data is saved to an embedded SQLite database (`tasks.db`) and persists across server restarts.
+- **Automatic Initialization**: Automatically creates the `tasks` table and seeds default data on the first run.
+- **Strict Validation**: Robust request body and ID validation returning standardized HTTP status codes (`200`, `201`, `204`, `400`, `404`).
+- **Interactive Documentation**: Swagger UI documentation served live at `/docs`.
+
+---
+
+## Database Architecture
+
+### Why SQLite?
+- **Zero Configuration**: SQLite is a serverless, self-contained database engine. It does not require running a separate background database server process (like PostgreSQL or MySQL).
+- **File-Based Persistence**: All data is stored in a single disk file, making it lightweight, fast, and easy to run locally or migrate.
+- **Synchronous Performance**: Using `better-sqlite3` provides fast, synchronous query execution in Node.js without async overhead.
+
+### Database Location
+The database is stored locally in the root project folder:
+
+```bash
+crud-api/tasks.db
+```
+
+*(Note: If `tasks.db` does not exist when the server starts, the application automatically initializes the database schema and seeds initial task rows).*
+
 
 ## Quick Start
 
@@ -22,6 +45,44 @@ node index.js
 ```
 
 The server will start running at http://localhost:3000.
+
+## Database Viewer & Manual SQL Queries
+You can inspect and manage tasks.db using any SQLite viewer (such as DB Browser for SQLite, VS Code SQLite Viewer extension, or the sqlite3 CLI).
+![Database Viewer Screenshot](./Database-before-update-and-delete.png)
+## Example SQL Queries Executed
+
+- List all tasks:
+```bash
+SELECT * FROM tasks;
+```
+
+- Show only completed tasks:
+```bash
+SELECT * FROM tasks WHERE done = 1;
+```
+
+- Count all records:
+```bash
+SELECT COUNT(*) FROM tasks;
+```
+
+- Mark all tasks as completed:
+```bash
+UPDATE tasks SET done = 1;
+```
+Output example :
+![Database Viewer Screenshot](./Database-after-updpate-all-tasks-to-done.png)
+
+
+- Delete all completed tasks:
+```bash
+DELETE FROM tasks WHERE done = 1;
+```
+Output Example :
+![Database Viewer Screenshot](./Database-after-delete-all-done-tasks.png)
+
+Example all outputs below:
+![Database Viewer Screenshot](./Apply-all-SQL-syntax.png)
 
 ## API Endpoints
 
