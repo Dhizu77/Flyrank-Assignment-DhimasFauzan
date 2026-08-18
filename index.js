@@ -128,25 +128,21 @@ app.get(
       //because in here we just need to change the 'done' value not the keys
       done : Boolean(task.done)
     }));
-    const id = database.prepare(req.params.id);
+    
     return res.status(200).json(allTasks)
   }
 );
 
 app.get(
   '/tasks/:id',(req,res) => {
-
     //okay first we need extract the id in the req body first to 
-    //pass it leter into the statement
+    //pass it later into the statement
     const id = parseInt(req.params.id ,10);
-
     
     //then we create statement to load the syntax first to execute later for 
     //get the item by id
     const statement = database.prepare('SELECT * FROM tasks WHERE id = ?')
     const item = statement.get(id);
-    
-
      // statement.get(id) returns the matching task object, 
      // or 'undefined' if no row matches
     // In JavaScript, 'undefined' is falsy
@@ -158,8 +154,6 @@ app.get(
     if(!item) {
       return res.status(404).json({ "error": `Task ${id} not found` });
     };
-
-
     //in the end , we retur the code and body response that already
     //edit the value of done keys (number to boolean)
     return res.status(200).json({
@@ -170,6 +164,7 @@ app.get(
 );
 //stage1Assignment2
 
+/*
 //stage3
 app.post(
   '/tasks' ,(req,res) => {
@@ -193,6 +188,34 @@ app.post(
   }
 );
 //stage3
+*/
+
+
+//stage2assignment2
+app.post(
+  '/tasks' , (req,res) => {
+    //first we must test the body request , wether is tittle exist or not
+    if(!req.body?.title || typeof req.body.title !== 'string' || req.body.title.length === 0){
+      return res.status(400).json({ error: "Bad Request: Title cannot be empty." });
+    };
+
+    const rowCount = database.prepare('SELECT COUNT(*) as count FROM tasks').get().count;
+    const newRowCount = rowCount + 1;
+    //here we will create new tasks
+
+    
+    const newTask = database.prepare('INSERT INTO tasks (id,title, done) VALUES (?, ?, ?)');
+    newTask.run(newRowCount,req.body.title, 0);
+
+    
+    return res.status(201).json(newTask);
+
+  }
+
+  
+);
+//stage2assignment2
+
 
 //curl.exe -i http://localhost:3000/tasks/1
 //use this for powershell
@@ -201,6 +224,7 @@ app.post(
 //use this for testing post new task for powershell
 
 
+/*
 //stage4
 app.put(
   '/tasks/:id' ,(req,res) => {
@@ -250,6 +274,9 @@ app.delete(
   }
 );
 //stage4
+*/
+
+
 
 //we must listen our port
 app.listen(
