@@ -275,7 +275,74 @@ app.delete(
 );
 //stage4
 */
+//stage3assignment2
 
+//create put method
+app.put(
+  '/tasks/:id' , (req,res) => {
+    const id = parseInt(req.params.id , 10);
+    const statement = database.prepare('SELECT * FROM tasks WHERE id = ?')
+    const item = statement.get(id);
+
+
+    //in here we gonna check first, whether this task is exist
+    if(!(item)) {
+      return res.status(404).json({ "error": "Task not found" });
+    };
+
+    //then we will check the request body , for filtering before we put it into our database
+    if (req.body.title === undefined && req.body.done === undefined) {
+      return res.status(400).json({ error: "Bad Request: Body cannot be empty." });
+    }
+    if(req.body.title !== undefined && (typeof req.body.title !== 'string' || req.body.title.trim() === '')){
+      return res.status(400).json({ error: "Bad Request: Title cannot be empty." });
+    };
+    if(req.body.done !== undefined && (typeof req.body.done !== 'boolean')){
+      return res.status(400).json({ error: "Bad Request: Done must be a boolean." })
+    };
+
+
+    //then we change it and store it into new variable 
+
+    // if provided in body, use new value; otherwise keep existing value from `item`
+    const newTitle = req.body.title !== undefined ? req.body.title.trim() : item.title;
+    const newDone = req.body.done !== undefined ? (req.body.done ? 1 : 0) : item.done;
+    
+
+    //then we apply with run the syntax to the database, remember put mean full update , so in here
+    //we update for each value in each column
+    const updateTask = database.prepare('UPDATE tasks SET title = ? , done = ? WHERE id = ?')
+    updateTask.run(newTitle , newDone ,id)
+
+    return res.status(200).json({
+      id: id,
+      title: newTitle,
+      done: Boolean(newDone)
+    });
+  }
+);
+
+//create delete method
+app.delete(
+  '/tasks/:id' , (req,res) => {
+    const id = parseInt(req.params.id , 10);
+    
+    if(isNaN(id)) {
+      return res.status(404).json({ error: 'Task not found' });
+    };
+
+    const statement = database.prepare('DELETE FROM tasks WHERE id = ?');
+    const info = statement.run(id);
+
+    
+    if (info.changes === 0) {
+      return res.status(404).json({ error: "Task not found" });
+    };
+
+    return res.status(204).send(); //204 mean no context which mean that we succesfully delete it
+  }
+);
+//stage3assignmet2
 
 
 //we must listen our port
